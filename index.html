@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>ProtoIA</title>
+<style>
+:root{--bg:#0b0d1f;--panel:#14172e;--ai:#1c2040;--tx:#eef0ff;--mut:#8f94b8;--a1:#8b5cf6;--a2:#22d3ee}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:"Trebuchet MS",Verdana,sans-serif}
+#app{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:radial-gradient(circle at 85% -10%,#3b2a7a55,transparent 55%),radial-gradient(circle at -10% 60%,#0e5b7a33,transparent 50%)}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px}
+.logo,.orb{border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#a78bfa 35%,#22d3ee 70%,#312e81);box-shadow:0 0 18px #7c3aed88}
+.logo{width:36px;height:36px}
+.ti{flex:1}
+.ti h1{margin:0;font-size:1.25rem;letter-spacing:.5px;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ti span{font-size:.78rem;color:var(--mut)}
+#opt{width:42px;height:42px;border:0;border-radius:14px;background:var(--panel);color:var(--tx);font-size:1.5rem}
+#log{flex:1;overflow-y:auto;padding:8px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:86%;padding:11px 15px;border-radius:20px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.me{align-self:flex-end;background:linear-gradient(135deg,var(--a1),#4f6df5);border-bottom-right-radius:6px}
+.ai{align-self:flex-start;background:var(--ai);border:1px solid #2b3160;border-bottom-left-radius:6px}
+.sys{align-self:center;color:var(--mut);font-size:.9rem;text-align:center}
+.hero{margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px}
+.orb{width:84px;height:84px;box-shadow:0 0 40px #7c3aed88;animation:fl 4s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-8px)}}
+.hero h2{margin:6px 0 0;font-size:1.5rem}
+.hero p{margin:0;color:var(--mut);max-width:20em;line-height:1.4}
+.chips{display:flex;flex-direction:column;gap:8px;margin-top:8px;width:100%;max-width:300px}
+.chips button{padding:11px 14px;border-radius:14px;border:1px solid #2b3160;background:var(--panel);color:var(--tx);font:inherit;font-size:.95rem}
+#bar{display:flex;gap:8px;padding:10px 12px 12px;align-items:flex-end}
+#t{flex:1;resize:none;max-height:120px;border:1px solid #2b3160;border-radius:22px;padding:12px 16px;font:inherit;background:var(--panel);color:var(--tx);outline:none}
+#bar button{width:46px;height:46px;border:0;border-radius:50%;font-size:1.25rem;background:var(--panel);color:var(--tx);flex:none}
+#bar button.go{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff}
+#bar button.rec{background:#ef4444}
+.ov{position:fixed;inset:0;background:rgba(5,6,18,.72);display:none;align-items:flex-end}
+.ov.on{display:flex}
+.ov.mid{align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-height:92%;overflow:auto;background:var(--panel);border-radius:26px 26px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;border:1px solid #2b3160}
+.mid .card{border-radius:26px;max-width:340px;text-align:center;align-items:center}
+.card h3{margin:0 0 4px;font-size:1.15rem}
+.card button.it{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:0;border-radius:14px;background:var(--ai);color:var(--tx);font:inherit;font-size:1rem;text-align:left}
+.card label{color:var(--mut);font-size:.85rem}
+.card input,.card select{width:100%;padding:12px;border-radius:12px;border:1px solid #33415f;background:var(--bg);color:var(--tx);font:inherit}
+.card p{margin:0;color:var(--mut);font-size:.85rem;line-height:1.4}
+.card .pri{padding:13px;border:0;border-radius:999px;font:inherit;font-weight:bold;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;width:100%}
+.card .sec{padding:12px;border:0;background:none;color:var(--mut);font:inherit;width:100%}
+.cr b{font-size:1.1rem;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.row{display:flex;gap:8px;align-items:center}
+.row .it{flex:1;min-width:0}
+.del{width:46px;height:46px;border:0;border-radius:12px;background:var(--ai);color:var(--tx);font-size:1.1rem;flex:none}
+#hl{display:flex;flex-direction:column;gap:8px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo"></div>
+    <div class="ti"><h1>ProtoIA</h1><span id="sub"></span></div>
+    <button id="opt" aria-label="Opciones">⋮</button>
+  </header>
+  <div id="log"></div>
+  <div id="bar">
+    <button id="mic" aria-label="Hablar">🎤</button>
+    <textarea id="t" rows="1" placeholder="Escribe o habla…"></textarea>
+    <button id="go" class="go" aria-label="Enviar">➤</button>
+  </div>
+</div>
+
+<div id="sheet" class="ov"><div class="card">
+  <h3>Opciones</h3>
+  <button class="it" id="o-set">⚙️ Ajustes de IA</button>
+  <button class="it" id="o-voz"></button>
+  <button class="it" id="o-new">✨ Nuevo chat</button>
+  <button class="it" id="o-hist">💬 Mis chats</button>
+  <button class="it" id="o-cr">💜 Créditos</button>
+</div></div>
+
+<div id="set" class="ov"><div class="card">
+  <h3>Ajustes de IA</h3>
+  <label>Proveedor</label>
+  <select id="pv"><option value="gemini">Gemini (Google)</option><option value="anthropic">Claude (Anthropic)</option><option value="openai">ChatGPT (OpenAI)</option></select>
+  <label>Tu clave de API (se guarda solo en tu celular)</label>
+  <input id="key" type="password" placeholder="Pega tu clave aquí" autocomplete="off">
+  <label>Modelo</label>
+  <input id="md" type="text">
+  <p>Necesitas internet. Nunca compartas tu clave con otras personas.</p>
+  <button class="pri" id="sv">Guardar</button>
+  <button class="sec" id="sx">Cancelar</button>
+</div></div>
+
+<div id="hist" class="ov"><div class="card">
+  <h3>Mis chats</h3>
+  <div id="hl"></div>
+  <button class="sec" id="hx">Cerrar</button>
+</div></div>
+
+<div id="cr" class="ov mid"><div class="card cr">
+  <div class="orb" style="width:64px;height:64px"></div>
+  <h3>ProtoIA</h3>
+  <p>Versión 1.0</p>
+  <p>Creada con cariño por</p>
+  <b>Ale y Clau 💜</b>
+  <button class="pri" id="cx" style="margin-top:10px">Cerrar</button>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DEF={anthropic:'claude-sonnet-5-5',openai:'gpt-4o-mini',gemini:'gemini-flash-latest'};
+const NAME={anthropic:'Claude',openai:'ChatGPT',gemini:'Gemini'};
+let cfg={pv:'gemini',key:'',md:DEF.gemini,speak:false},msgs=[],busy=false;
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('ia_cfg')||'{}'));}catch(e){}
+function save(){try{localStorage.setItem('ia_cfg',JSON.stringify(cfg));}catch(e){}}
+let chats=[],cur=null;
+try{chats=JSON.parse(localStorage.getItem('ia_chats')||'[]');}catch(e){}
+function ov(id,on){$(id).classList.toggle('on',on);}
+function status(){$('sub').textContent=cfg.key?'Conectada · '+NAME[cfg.pv]:'Sin conectar';}
+function vozTxt(){$('o-voz').textContent=cfg.speak?'🔊 Voz: activada':'🔇 Voz: desactivada';}
+
+function add(cls,text){
+  const h=$('log').querySelector('.hero');if(h)h.remove();
+  const d=document.createElement('div');d.className='m '+cls;d.textContent=text;
+  $('log').appendChild(d);$('log').scrollTop=1e9;return d;
+}
+function hello(){
+  msgs=[];cur=null;const l=$('log');l.innerHTML='';
+  const h=document.createElement('div');h.className='hero';
+  h.innerHTML='<div class="orb"></div><h2>Hola, soy ProtoIA</h2><p></p><div class="chips"></div>';
+  h.querySelector('p').textContent=cfg.key?'Escribe o toca el micrófono para hablar conmigo.':'Abre ⋮ Opciones y entra a Ajustes de IA para pegar tu clave.';
+  [['😄','Cuéntame un chiste'],['💡','Dame una idea para hoy'],['✍️','Ayúdame a escribir un mensaje']].forEach(c=>{
+    const b=document.createElement('button');b.textContent=c[0]+' '+c[1];
+    b.onclick=()=>{$('t').value=c[1];send();};h.querySelector('.chips').appendChild(b);
+  });
+  l.appendChild(h);
+}
+
+function speak(s){
+  if(!cfg.speak || !s) return;
+
+  if(!window.speechSynthesis){
+    add('sys','Tu navegador no admite reproducción de voz.');
+    return;
+  }
+
+  const synth = window.speechSynthesis;
+  synth.cancel();
+
+  const u = new SpeechSynthesisUtterance(s);
+  u.lang = 'es-AR';
+  u.rate = 0.95;
+  u.pitch = 1;
+  u.volume = 1;
+
+  function elegirVoz(){
+    const voces = synth.getVoices();
+
+    return voces.find(v => v.lang === 'es-AR')
+        || voces.find(v => v.lang === 'es-MX')
+        || voces.find(v => v.lang.startsWith('es'))
+        || null;
+  }
+
+  const voz = elegirVoz();
+  if(voz) u.voice = voz;
+
+  u.onstart = () => console.log('ProtoIA comenzó a hablar');
+  u.onerror = e => console.log('Error de voz:', e.error);
+
+  synth.speak(u);
+}
+
+async function ask(){
+  const sys='Eres ProtoIA, un asistente amable. Responde en español, de forma clara y breve.';
+  const J={'content-type':'application/json'};
+  let url,opt,pick;
+  if(cfg.pv==='anthropic'){
+    url='https://api.anthropic.com/v1/messages';
+    opt={method:'POST',headers:{...J,'x-api-key':cfg.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:cfg.md,max_tokens:1024,system:sys,messages:msgs})};
+    pick=j=>j.content.map(c=>c.text||'').join('');
+  }else if(cfg.pv==='gemini'){
+    url='https://generativelanguage.googleapis.com/v1beta/models/'+cfg.md+':generateContent?key='+encodeURIComponent(cfg.key);
+    opt={method:'POST',headers:J,
+      body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:msgs.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}))})};
+    pick=j=>j.candidates[0].content.parts.map(x=>x.text||'').join('');
+  }else{
+    url='https://api.openai.com/v1/chat/completions';
+    opt={method:'POST',headers:{...J,'Authorization':'Bearer '+cfg.key},
+      body:JSON.stringify({model:cfg.md,messages:[{role:'system',content:sys},...msgs]})};
+    pick=j=>j.choices[0].message.content;
+  }
+  let tm;const lim=new Promise((_,rej)=>{tm=setTimeout(()=>rej(new Error('TIMEOUT')),45000);});
+  try{
+    const r=await Promise.race([fetch(url,opt),lim]);
+    const j=await Promise.race([r.json(),lim]);
+    if(j.error)throw new Error(j.error.message||JSON.stringify(j.error));
+    return pick(j);
+  }catch(e){
+    if(e.message==='TIMEOUT')throw new Error('Tardó demasiado. Revisa tu internet o cambia de modelo en Ajustes.');
+    if(e instanceof TypeError&&/fetch|network/i.test(e.message))throw new Error('Sin conexión. Revisa tu internet y el permiso de Internet del APK.');
+    throw e;
+  }finally{clearTimeout(tm);}
+}
+
+async function send(){
+  const t=$('t').value.trim();
+  if(!t||busy)return;
+  if(!cfg.key){ov('set',true);return;}
+  $('t').value='';$('t').style.height='auto';busy=true;
+  add('me',t);msgs.push({role:'user',content:t});
+  const w=add('ai','Pensando…');
+  try{
+    const a=await ask();
+    w.textContent=a||'(sin respuesta)';msgs.push({role:'assistant',content:a});persist();speak(a);
+  }catch(e){
+    w.textContent='Error: '+e.message;msgs.pop();
+  }
+  busy=false;$('log').scrollTop=1e9;
+}
+
+/* Voz: dictado (si el dispositivo lo permite) */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;
+$('mic').onclick=()=>{
+  if(!SR){add('sys','Este dispositivo no permite dictado dentro de la app. Usa el micrófono del teclado.');return;}
+  if(rec){rec.stop();return;}
+  rec=new SR();rec.lang='es-ES';rec.interimResults=false;
+  rec.onresult=e=>{$('t').value=e.results[0][0].transcript;send();};
+  rec.onerror=()=>add('sys','No pude escuchar. Revisa el permiso del micrófono.');
+  rec.onend=()=>{rec=null;$('mic').classList.remove('rec');};
+  $('mic').classList.add('rec');rec.start();
+};
+
+$('go').onclick=send;
+$('t').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+$('t').addEventListener('input',()=>{const t=$('t');t.style.height='auto';t.style.height=Math.min(t.scrollHeight,120)+'px';});
+
+/* Opciones */
+$('opt').onclick=()=>{vozTxt();ov('sheet',true);};
+['sheet','set','cr','hist'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id))ov(id,false);}));
+$('o-set').onclick=()=>{ov('sheet',false);$('pv').value=cfg.pv;$('key').value=cfg.key;$('md').value=cfg.md;ov('set',true);};
+$('o-voz').onclick=()=>{cfg.speak=!cfg.speak;if(!cfg.speak&&window.speechSynthesis)speechSynthesis.cancel();save();vozTxt();};
+$('o-new').onclick=()=>{ov('sheet',false);hello();};
+$('o-cr').onclick=()=>{ov('sheet',false);ov('cr',true);};
+$('cx').onclick=()=>ov('cr',false);
+$('sx').onclick=()=>ov('set',false);
+$('pv').onchange=()=>{$('md').value=DEF[$('pv').value];};
+$('sv').onclick=()=>{cfg.pv=$('pv').value;cfg.key=$('key').value.trim();cfg.md=$('md').value.trim()||DEF[cfg.pv];save();ov('set',false);status();hello();};
+
+/* Chats guardados */
+function saveChats(){try{localStorage.setItem('ia_chats',JSON.stringify(chats.slice(0,50)));}catch(e){}}
+function persist(){
+  if(!cur){cur=Date.now();chats.unshift({id:cur,title:'',msgs:[],ts:cur});}
+  const c=chats.find(x=>x.id===cur);if(!c)return;
+  c.msgs=msgs.slice();c.title=c.title||(msgs[0]?msgs[0].content.slice(0,40):'Chat');c.ts=Date.now();
+  chats.sort((a,b)=>b.ts-a.ts);saveChats();
+}
+function openChat(id){
+  const c=chats.find(x=>x.id===id);if(!c)return;
+  cur=id;msgs=c.msgs.slice();$('log').innerHTML='';
+  msgs.forEach(m=>add(m.role==='user'?'me':'ai',m.content));
+  ov('hist',false);
+}
+function renderHist(){
+  const l=$('hl');l.innerHTML='';
+  if(!chats.length){const p=document.createElement('p');p.textContent='Aún no tienes chats guardados. Se guardan solos al conversar.';l.appendChild(p);return;}
+  chats.forEach(c=>{
+    const r=document.createElement('div');r.className='row';
+    const b=document.createElement('button');b.className='it';b.textContent='💬 '+c.title;b.onclick=()=>openChat(c.id);
+    const d=document.createElement('button');d.className='del';d.textContent='🗑️';
+    d.onclick=()=>{chats=chats.filter(x=>x.id!==c.id);saveChats();if(cur===c.id)hello();renderHist();};
+    r.appendChild(b);r.appendChild(d);l.appendChild(r);
+  });
+}
+$('o-hist').onclick=()=>{ov('sheet',false);renderHist();ov('hist',true);};
+$('hx').onclick=()=>ov('hist',false);
+
+status();hello();
+</script>
+</body>
+</html>
